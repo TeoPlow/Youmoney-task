@@ -40,7 +40,7 @@ def get_payments_id(status: str) -> list[str]:
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT payment_id FROM payments_status
+            SELECT payment_id FROM 'payments_status'
             WHERE status = ?;
             """, (status, )
         )

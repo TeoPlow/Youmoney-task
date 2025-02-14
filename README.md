@@ -25,16 +25,19 @@ Youmoney-task/
 
 1. Запустите Redis:
     ```sh
+    # Находясь в папке app/
     docker run -p 6379:6379 --name my-redis -d redis
     ```
 
 2. Запустите Celery:
     ```sh
+    # Находясь в папке app/
     celery -A celery_tasks.celery worker --loglevel=info
     ```
 
 3. Запустите Flower для удобной слежки за работой Celery:
     ```sh
+    # Находясь в папке app/
     celery -A celery_tasks.celery flower
     ```
 
