@@ -34,17 +34,17 @@ def check_payment_task(id: str, one_check=False) -> PaymentResponse:
         time.sleep(CHECK_PAYMENT_STATUS_PERIOD)
         payment_data = Payment.find_one(id)
         if payment_data.status == "pending":
-            log.debug(f'Платёж {payment_data.id} ожидаёт обработки')
+            log.info(f'Платёж {payment_data.id} ожидаёт обработки')
             if one_check:
                 break
             pass
         elif payment_data.status == "succeeded":
-            log.debug(f'Платёж {payment_data.id} принят')
+            log.info(f'Платёж {payment_data.id} принят')
             break
         elif payment_data.status == "canceled":
-            log.debug(f'Платёж {payment_data.id} отменён')
+            log.info(f'Платёж {payment_data.id} отменён')
             if not one_check:
-                log.debug(f'Платёж {payment_data.id} повторится через сутки')
+                log.info(f'Платёж {payment_data.id} повторится через сутки')
                 next_time = datetime.now() + timedelta(days=1)
                 retry_payment_task.apply_async(id, eta=next_time)
             break
@@ -53,14 +53,16 @@ def check_payment_task(id: str, one_check=False) -> PaymentResponse:
             log.error(error_msg)
             raise Exception(error_msg)
 
-    return payment_data
+    update_payment_status(payment_data.id, payment_data.status)
+    return payment_data.json()
 
 
 @celery.task
 def recheck_payments_task(id: str) -> None:
     log.info('TASK: Повторная проверка статуса платежей'
              ' и обновление информации о них в БД')
-    payment_data_task = check_payment_task.apply_async(id, one_check=True)
-    payment_data: PaymentResponse = payment_data_task.get(timeout=None)
-
-    update_payment_status(payment_data.id, payment_data.status)
+    try:
+        payment_data: PaymentResponse = Payment.find_one(id)
+        update_payment_status(payment_data.id, payment_data.status)
+    except ValueError as e:
+        log.error(f'Беда, payment_id неверный, перепроверка неуспешна: {e}')

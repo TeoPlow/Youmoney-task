@@ -1,6 +1,6 @@
 import sqlite3
 import logging
-from config import DATABASE_NAME
+from config import DATABASE_PATH
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 def init_db() -> None:
     log.debug('Инициализация БД')
-    with sqlite3.connect(DATABASE_NAME) as conn:
+    with sqlite3.connect(DATABASE_PATH) as conn:
         conn.execute("PRAGMA foreign_keys = ON;")
         cursor = conn.cursor()
         cursor.execute(
@@ -36,7 +36,7 @@ def init_db() -> None:
 
 def get_payments_id(status: str) -> list[str]:
     log.debug(f'Получение из БД списка платежей со статусом {status}')
-    with sqlite3.connect(DATABASE_NAME) as conn:
+    with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -49,7 +49,7 @@ def get_payments_id(status: str) -> list[str]:
 
 def update_payment_status(payment_id: str, status: str) -> None:
     log.debug(f'Обновление статуса платежа {payment_id} на {status} в БД')
-    with sqlite3.connect(DATABASE_NAME) as conn:
+    with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -66,7 +66,7 @@ def add_payment(payment_id: str,
                 user_id: str,
                 status: str) -> None:
     log.debug(f'Добавление платежа {payment_id} в БД')
-    with sqlite3.connect(DATABASE_NAME) as conn:
+    with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """

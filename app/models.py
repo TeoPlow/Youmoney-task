@@ -36,10 +36,9 @@ def create_payment(data: Dict) -> Tuple[str, str]:
         "description": f"Заказ №{data['order_id']}"
     }, payment_id)
 
-    check_payment_task.apply_async((payment.id, ),
-                                   countdown=1)
-
-    log.info(f'Платёж {payment.id} создан')
+    payment_data = check_payment_task.apply_async((payment.id, ),
+                                                  countdown=1)
+    log.info(f'Платёж {payment.id} создан: \nИНФО: {payment_data}')
     return (payment.confirmation.confirmation_url, payment.id)
 
 
@@ -55,16 +54,18 @@ def recheck_payments_status() -> None:
               'если будут pending - перезапишу их в БД')
     pending_payments_id = get_payments_id('pending')
 
+    log.debug(f"Получил список платежей: {pending_payments_id}")
+
     task_group = group(
         recheck_payments_task.s(payment_id)
         for payment_id in pending_payments_id
     )
 
     result = task_group.apply_async()
-    log.debug(f'Task group created: {result.id}')
+    log.debug(f'Группа задач создана: {result.id}')
 
     while not result.ready():
-        log.debug('Waiting for task group to finish')
+        log.debug('Жду, пока задачи закончат свое выполнение')
         pass
 
-    log.debug('Task group finished')
+    log.debug('Группа задач выполнена')

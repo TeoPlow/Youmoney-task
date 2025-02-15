@@ -10,6 +10,9 @@ RETURN_URL = os.getenv('RETURN_URL')
 CHECK_PAYMENT_STATUS_PERIOD = int(os.getenv('CHECK_PAYMENT_STATUS_PERIOD'))
 DATABASE_NAME = os.getenv('DATABASE_NAME')
 
+current_dir = os.getcwd()
+DATABASE_PATH = os.path.join(current_dir, 'app', DATABASE_NAME)
+
 
 # Just .env Sample:
 #
