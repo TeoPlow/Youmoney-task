@@ -1,27 +1,19 @@
 import uuid
 import logging
 from typing import Dict, Tuple
-from yookassa import Configuration, Payment
-from yookassa.domain.response import PaymentResponse
+from yookassa import Configuration, Payment, Refund
+from yookassa.domain.response import PaymentResponse, RefundResponse
+from yookassa.domain.exceptions.bad_request_error import BadRequestError
 from config import YKASSA_SECRET_KEY, YKASSA_SHOP_ID, RETURN_URL
 from celery import group
-from celery_tasks import check_payment_task, recheck_payments_task
-from db import get_payments_id
+from celery_tasks import check_payment_task, check_refund_task
+from db import get_payment
 
 Configuration.account_id = YKASSA_SHOP_ID
 Configuration.secret_key = YKASSA_SECRET_KEY
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
-
-# @dataclass
-# class Book:
-#     title: str
-#     author_id: int
-#     id: Optional[int] = None
-
-#     def __getitem__(self, item: str) -> Union[int, str]:
-#         return getattr(self, item)
 
 
 def create_payment(data: Dict) -> Tuple[str, str]:
@@ -48,7 +40,8 @@ def check_payment(payment_id: str) -> PaymentResponse:
     response = payment_data.get(timeout=None)
     return response
 
-
+# БД выкрутил
+"""
 def recheck_payments_status() -> None:
     log.debug('Перепроверяю статусы платежей, '
               'если будут pending - перезапишу их в БД')
@@ -69,3 +62,20 @@ def recheck_payments_status() -> None:
         pass
 
     log.debug('Группа задач выполнена')
+"""
+
+def refund_payment(data: Dict):
+    if not get_payment(data['payment_id']):
+        raise BadRequestError
+    refund = Refund.create({
+        "amount": {
+            "value": f"{data['amount']['value']}",
+            "currency": f"{data['amount']['currency']}"
+        },
+        "payment_id": f'{data['payment_id']}'
+    })
+
+    refund_data = check_refund_task.apply_async((refund.id, ),
+                                                  countdown=1)
+    log.info(f'Возврат с ID: {refund.id} создан: \nИНФО: {refund_data}')
+    return refund.json()

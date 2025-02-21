@@ -34,15 +34,15 @@ def init_db() -> None:
         log.debug('БД инициализирована')
 
 
-def get_payments_id(status: str) -> list[str]:
-    log.debug(f'Получение из БД списка платежей со статусом {status}')
+def get_payment(id: str) -> list[str]:
+    log.debug(f'Получение из БД платежа по ID')
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT payment_id FROM 'payments_status'
-            WHERE status = ?;
-            """, (status, )
+            SELECT * FROM 'payments_status'
+            WHERE payment_id = ?;
+            """, (id, )
         )
         return cursor.fetchall()
 

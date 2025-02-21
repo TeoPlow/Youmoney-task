@@ -6,3 +6,4 @@ marshmallow
 celery
 redis
 flower
+python-telegram-bot
