@@ -24,28 +24,12 @@ Youmoney-task/
 
 ## Запуск проекта
 
-1. Запустите Redis:
-    ```sh
-    # Находясь в папке app/
-    docker run -p 6379:6379 --name my-redis -d redis
-    ```
+1. Создайте **.env** файл на основе **example.env**. Укажите в нём все нужные настройки.
 
-2. Запустите Celery:
-    ```sh
-    # Находясь в папке app/
-    celery -A celery_tasks.celery worker --loglevel=info
-    ```
-
-3. Запустите Flower для удобной слежки за работой Celery:
-    ```sh
-    # Находясь в папке app/
-    celery -A celery_tasks.celery flower
-    ```
-
-4. Запустите Python проект:
-    ```sh
-    python app/app.py
-    ```
+2. Запустите проект командой:
+```bash
+docker-compose up --build
+```
 
 
 
