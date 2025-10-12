@@ -35,7 +35,7 @@ def init_db() -> None:
 
 
 def get_payment(id: str) -> list[str]:
-    log.debug(f'Получение из БД платежа по ID')
+    log.debug('Получение из БД платежа по ID')
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(

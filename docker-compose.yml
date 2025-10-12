@@ -1,0 +1,57 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: youmoney-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  app:
+    build: .
+    container_name: youmoney-app
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+    command: python app.py
+    volumes:
+      - ./app:/app
+      - ./requirements.txt:/requirements.txt
+      - ./.env:/.env
+
+  celery:
+    build: .
+    container_name: youmoney-celery
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - app
+    command: celery -A celery_tasks.celery worker --loglevel=info
+    volumes:
+      - ./app:/app
+      - ./requirements.txt:/requirements.txt
+      - ./.env:/.env
+
+  flower:
+    build: .
+    container_name: youmoney-flower
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - celery
+    ports:
+      - "5555:5555"
+    command: celery -A celery_tasks.celery flower --port=5555
+    volumes:
+      - ./app:/app
+      - ./requirements.txt:/requirements.txt
+      - ./.env:/.env
+
+networks:
+  default:
+    external: true
+    name: shop-network

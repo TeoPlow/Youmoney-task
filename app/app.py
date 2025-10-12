@@ -47,7 +47,7 @@ class PaymentResource(Resource):
             log.error(message)
             return {"type": "error",
                     "message": message,
-                    "log": e}, HTTPStatus.INTERNAL_SERVER_ERROR
+                    "log": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 class PaymentCreateResource(Resource):
@@ -73,14 +73,14 @@ class PaymentCreateResource(Resource):
             log.error(message)
             return {"type": "error",
                     "message": message,
-                    "log": e}, HTTPStatus.BAD_REQUEST
+                    "log": str(e)}, HTTPStatus.BAD_REQUEST
         except Exception as e:
             message = 'Ошибка при создании платежа'
-            log.error(message)
+            log.error(f"{message}: {e}")
             return {"type": "error",
                     "message": message,
-                    "log": e}, HTTPStatus.INTERNAL_SERVER_ERROR
-        
+                    "log": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
+
 
 class RefundCreateResource(Resource):
     def post(self) -> tuple[dict, HTTPStatus]:
@@ -101,18 +101,18 @@ class RefundCreateResource(Resource):
             log.error(message)
             return {"type": "error",
                     "message": message,
-                    "log": e}, HTTPStatus.BAD_REQUEST
+                    "log": str(e)}, HTTPStatus.BAD_REQUEST
         except BadRequestError as e:
             message = 'Неверный запрос. Вероятно ошибка в ID платежа.'
             return {"type": "error",
                     "message": message,
-                    "log": e}, HTTPStatus.BAD_REQUEST
+                    "log": str(e)}, HTTPStatus.BAD_REQUEST
         except Exception as e:
             message = 'Ошибка при возврате платежа'
             log.error(message)
             return {"type": "error",
                     "message": message,
-                    "log": e}, HTTPStatus.INTERNAL_SERVER_ERROR
+                    "log": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 api.add_resource(PaymentCreateResource, '/api/payment')
